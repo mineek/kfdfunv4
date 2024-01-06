@@ -55,6 +55,8 @@ UITextView *logbox;
 	printf(":: BUILD_TIME: %s %s\n", __DATE__, __TIME__);
 	printf(":: BUILD_STYLE: %s\n", "DEBUG");
 	printf("::\n");
+	printf(":: PRIVATE BUILD - DO NOT LEAK\n");
+	printf("::\n");
 	printf("========================================\n");
 }
 

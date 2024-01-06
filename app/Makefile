@@ -1,0 +1,28 @@
+TARGET := iphone:clang:14.5:14.0
+INSTALL_TARGET_PROCESSES = kfdmineek
+ARCHS = arm64
+
+include $(THEOS)/makefiles/common.mk
+
+APPLICATION_NAME = kfdmineek
+
+kfdmineek_FILES = $(wildcard *.m)
+kfdmineek_FRAMEWORKS = UIKit CoreGraphics IOKit Foundation
+kfdmineek_CFLAGS = -fobjc-arc -Wno-error -I../exploit
+kfdmineek_CODESIGN_FLAGS = -Sentitlements.plist
+
+include $(THEOS_MAKE_PATH)/application.mk
+
+after-package::
+	@echo "Removing old files (if any)..."
+	@rm -rf $(THEOS_OBJ_DIR)/Payload || true
+	@rm -rf $(THEOS_OBJ_DIR)/$(APPLICATION_NAME).ipa || true
+	@rm -rf $(THEOS_OBJ_DIR)/$(APPLICATION_NAME).tipa || true
+	@rm -rf $(THEOS_PACKAGE_DIR)/$(APPLICATION_NAME).tipa || true
+	@echo "Making .tipa..."
+	@mkdir -p $(THEOS_OBJ_DIR)/Payload
+	@mv $(THEOS_OBJ_DIR)/$(APPLICATION_NAME).app $(THEOS_OBJ_DIR)/Payload/$(APPLICATION_NAME).app
+	@cd $(THEOS_OBJ_DIR) && zip -r $(APPLICATION_NAME).ipa Payload
+	@mv $(THEOS_OBJ_DIR)/$(APPLICATION_NAME).ipa $(THEOS_OBJ_DIR)/$(APPLICATION_NAME).tipa
+	@mv $(THEOS_OBJ_DIR)/$(APPLICATION_NAME).tipa $(THEOS_PACKAGE_DIR)
+	@echo "Done, .tipa is at $(THEOS_PACKAGE_DIR)/$(APPLICATION_NAME).tipa"

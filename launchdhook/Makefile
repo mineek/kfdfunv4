@@ -1,11 +1,11 @@
-TARGET := iphone:clang:14.5:14.0
+TARGET := iphone:clang:16.4:14.0
 ARCHS = arm64
 include $(THEOS)/makefiles/common.mk
 
 LIBRARY_NAME = launchdhook
 
 launchdhook_FILES = $(wildcard *.m) $(wildcard *.c)
-launchdhook_CFLAGS = -fobjc-arc
+launchdhook_CFLAGS = -fobjc-arc -I../include
 launchdhook_CODESIGN_FLAGS = -Sentitlements.plist
 
 after-package::

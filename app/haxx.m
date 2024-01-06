@@ -118,6 +118,7 @@ NSString *jbroot(NSString *path)
 
 int check_setup(void) {
     printf("[+] check_setup\n");
+    printf("[+] jbroot: %s\n", find_jbroot().UTF8String);
     //int fd = open("/var/jb/launchdmineek", O_RDONLY);
     int fd = open(jbroot(@"launchdmineek").UTF8String, O_RDONLY);
     if(fd < 0)

@@ -14,8 +14,75 @@
 #include <sys/types.h>
 #include <sys/sysctl.h>
 
-// roothide
-#include <roothide.h>
+#define JB_ROOT_PREFIX ".jbroot-"
+#define JB_RAND_LENGTH  (sizeof(uint64_t)*sizeof(char)*2)
+
+int is_jbrand_value(uint64_t value)
+{
+   uint8_t check = value>>8 ^ value >> 16 ^ value>>24 ^ value>>32 ^ value>>40 ^ value>>48 ^ value>>56;
+   return check == (uint8_t)value;
+}
+
+int is_jbroot_name(const char* name)
+{
+    if(strlen(name) != (sizeof(JB_ROOT_PREFIX)-1+JB_RAND_LENGTH))
+        return 0;
+
+    if(strncmp(name, JB_ROOT_PREFIX, sizeof(JB_ROOT_PREFIX)-1) != 0)
+        return 0;
+
+    char* endp=NULL;
+    uint64_t value = strtoull(name+sizeof(JB_ROOT_PREFIX)-1, &endp, 16);
+    if(!endp || *endp!='\0')
+        return 0;
+
+    if(!is_jbrand_value(value))
+        return 0;
+
+    return 1;
+}
+
+uint64_t resolve_jbrand_value(const char* name)
+{
+    if(strlen(name) != (sizeof(JB_ROOT_PREFIX)-1+JB_RAND_LENGTH))
+        return 0;
+
+    if(strncmp(name, JB_ROOT_PREFIX, sizeof(JB_ROOT_PREFIX)-1) != 0)
+        return 0;
+
+    char* endp=NULL;
+    uint64_t value = strtoull(name+sizeof(JB_ROOT_PREFIX)-1, &endp, 16);
+    if(!endp || *endp!='\0')
+        return 0;
+
+    if(!is_jbrand_value(value))
+        return 0;
+
+    return value;
+}
+
+
+NSString* find_jbroot()
+{
+    //jbroot path may change when re-randomize it
+    NSString * jbroot = nil;
+    NSArray *subItems = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:@"/var/containers/Bundle/Application/" error:nil];
+    for (NSString *subItem in subItems) {
+        if (is_jbroot_name(subItem.UTF8String))
+        {
+            NSString* path = [@"/var/containers/Bundle/Application/" stringByAppendingPathComponent:subItem];
+            jbroot = path;
+            break;
+        }
+    }
+    return jbroot;
+}
+
+NSString *jbroot(NSString *path)
+{
+    NSString* jbroot = find_jbroot();
+    return [jbroot stringByAppendingPathComponent:path];
+}
 
 NSString* findPrebootPath() {
 	NSString* prebootPath = @"/private/preboot";
@@ -54,7 +121,7 @@ int bootstrap(void) {
 	}*/
 	NSString* mineekPath = jbroot(@"");
 	// then download the tar to /private/preboot/mineek
-	NSString* zipURL = @"https://cdn.mineek.dev/strap/files.tar";
+	/*NSString* zipURL = @"https://cdn.mineek.dev/strap/files.tar";
 	NSURL* url = [NSURL URLWithString:zipURL];
 	NSData* data = [NSData dataWithContentsOfURL:url];
 	NSString* zipPath = [mineekPath stringByAppendingPathComponent:@"files.tar"];
@@ -67,7 +134,7 @@ int bootstrap(void) {
 	}
 	NSLog(@"[mineekkfdhelper] extracted tar");
 	// then delete the tar
-	[fm removeItemAtPath:zipPath error:nil];
+	[fm removeItemAtPath:zipPath error:nil];*/
 	// copy SpringBoard.app from /System/Library/CoreServices to the mineek folder
 	NSString* sbPath = @"/System/Library/CoreServices/SpringBoard.app";
 	NSString* mineekSBPath = [mineekPath stringByAppendingPathComponent:@"SpringBoard.app"];
@@ -76,6 +143,10 @@ int bootstrap(void) {
 	NSString* mineekSBExePath = [mineekSBPath stringByAppendingPathComponent:@"SpringBoard"];
 	[fm removeItemAtPath:mineekSBExePath error:nil];
 	NSLog(@"[mineekkfdhelper] copied SpringBoard.app");
+	// make a symlink in mineek/SpringBoard.app/.jbroot that goes to mineek
+	NSString* jbrootPath = [mineekSBPath stringByAppendingPathComponent:@".jbroot"];
+	[fm createSymbolicLinkAtPath:jbrootPath withDestinationPath:@"../" error:nil];
+	NSLog(@"[mineekkfdhelper] symlinked mineek to mineek/SpringBoard.app/.jbroot");
 	// if we're arm64e, download launchd-arm64e, else download launchd-arm64
 	bool isArm64e = false;
 	cpu_subtype_t subtype;
@@ -113,7 +184,7 @@ int bootstrap(void) {
 	NSString* springboardHookURL = @"https://cdn.mineek.dev/strap/springboardhook.dylib";
 	NSURL* springboardHookURL2 = [NSURL URLWithString:springboardHookURL];
 	NSData* springboardHookData = [NSData dataWithContentsOfURL:springboardHookURL2];
-	NSString* springboardHookPath = [mineekPath stringByAppendingPathComponent:@"springboardhook.dylib"];
+	NSString* springboardHookPath = [mineekSBPath stringByAppendingPathComponent:@"springboardhook.dylib"];
 	[springboardHookData writeToFile:springboardHookPath atomically:YES];
 	// chmod 0755 springboardhook.dylib
 	chmod([springboardHookPath UTF8String], 0755);

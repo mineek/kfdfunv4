@@ -1,5 +1,6 @@
 #import "KFDRootViewController.h"
 #import "krw.h"
+#import "haxx.h"
 
 @implementation KFDRootViewController
 
@@ -62,6 +63,17 @@ UITextView *logbox;
 	[alert addAction:[UIAlertAction actionWithTitle:@"Exploit kernel" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
 		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 			kopen_wrapper();
+		});
+	}]];
+
+	[alert addAction:[UIAlertAction actionWithTitle:@"launchd haxx" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+			if (is_exploited()) {
+				printf("[+] launching launchd haxx\n");
+				launchd_haxx();
+			} else {
+				printf("[-] kernel not exploited, do that first\n");
+			}
 		});
 	}]];
 

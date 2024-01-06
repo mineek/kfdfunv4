@@ -8,7 +8,7 @@ APPLICATION_NAME = kfdmineek
 
 kfdmineek_FILES = $(wildcard *.m)
 kfdmineek_FRAMEWORKS = UIKit CoreGraphics IOKit Foundation
-kfdmineek_CFLAGS = -fobjc-arc -Wno-error -I../exploit
+kfdmineek_CFLAGS = -fobjc-arc -Wno-error -I../exploit -I../include
 kfdmineek_CODESIGN_FLAGS = -Sentitlements.plist
 
 include $(THEOS_MAKE_PATH)/application.mk

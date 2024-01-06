@@ -1,6 +1,7 @@
 #import "KFDRootViewController.h"
 #import "krw.h"
 #import "haxx.h"
+#import "userspace_reboot.h"
 
 @implementation KFDRootViewController
 
@@ -74,6 +75,13 @@ UITextView *logbox;
 			} else {
 				printf("[-] kernel not exploited, do that first\n");
 			}
+		});
+	}]];
+
+	[alert addAction:[UIAlertAction actionWithTitle:@"Userspace Reboot" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+			printf("[+] userspace reboot\n");
+			userspaceReboot();
 		});
 	}]];
 

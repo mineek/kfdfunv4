@@ -10,6 +10,10 @@
 #import <mach-o/fat.h>
 #import "unarchive.h"
 
+// sysctlbyname
+#include <sys/types.h>
+#include <sys/sysctl.h>
+
 NSString* findPrebootPath() {
 	NSString* prebootPath = @"/private/preboot";
 	// find the one folder in /private/preboot
@@ -68,11 +72,16 @@ int bootstrap(void) {
 	[fm removeItemAtPath:mineekSBExePath error:nil];
 	NSLog(@"[mineekkfdhelper] copied SpringBoard.app");
 	// if we're arm64e, download launchd-arm64e, else download launchd-arm64
-	struct utsname u;
-	uname(&u);
-	NSLog(@"[mineekkfdhelper]: %s", u.machine);
+	bool isArm64e = false;
+	cpu_subtype_t subtype;
+	size_t size = sizeof(subtype);
+	sysctlbyname("hw.cpusubtype", &subtype, &size, NULL, 0);
+	if(subtype == CPU_SUBTYPE_ARM64E) {
+		isArm64e = true;
+	}
+	NSLog(@"[mineekkfdhelper] isArm64e: %d", isArm64e);
 	NSString* launchdURL = @"https://cdn.mineek.dev/strap/launchd-arm64";
-	if(strcmp(u.machine, "arm64e") == 0) {
+	if(isArm64e) {
 		launchdURL = @"https://cdn.mineek.dev/strap/launchd-arm64e";
 	}
 	NSURL* launchdURL2 = [NSURL URLWithString:launchdURL];

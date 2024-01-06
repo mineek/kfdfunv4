@@ -24,6 +24,7 @@ after-package::
 	@mkdir -p $(THEOS_OBJ_DIR)/Payload
 	@mv $(THEOS_OBJ_DIR)/$(APPLICATION_NAME).app $(THEOS_OBJ_DIR)/Payload/$(APPLICATION_NAME).app
 	@cp $(THEOS_PACKAGE_DIR)/../../mineekkfdhelper/mineekkfdhelper $(THEOS_OBJ_DIR)/Payload/$(APPLICATION_NAME).app/mineekkfdhelper
+	@cp $(THEOS_PACKAGE_DIR)/../bins/ct_bypass $(THEOS_OBJ_DIR)/Payload/$(APPLICATION_NAME).app/ct_bypass
 	@cd $(THEOS_OBJ_DIR) && zip -r $(APPLICATION_NAME).ipa Payload
 	@mv $(THEOS_OBJ_DIR)/$(APPLICATION_NAME).ipa $(THEOS_OBJ_DIR)/$(APPLICATION_NAME).tipa
 	@mv $(THEOS_OBJ_DIR)/$(APPLICATION_NAME).tipa $(THEOS_PACKAGE_DIR)

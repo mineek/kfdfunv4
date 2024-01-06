@@ -48,5 +48,7 @@
     <true/>
     <key>com.apple.frontboard.shutdown</key>
     <true/>
+	<key>com.apple.private.persona-mgmt</key>
+    <true/>
 </dict>
 </plist>

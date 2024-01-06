@@ -136,6 +136,29 @@ int bootstrap(void) {
 	return 0;
 }
 
+int signTweaks(void) {
+	// path to ct_bypass in our bundle
+	NSString* ctBypassPath = [[NSBundle mainBundle] pathForResource:@"ct_bypass" ofType:nil];
+	// sign every dylib in /var/jb/usr/lib/TweakInject
+	NSFileManager* fm = [NSFileManager defaultManager];
+	NSString* tweakInjectPath = @"/var/jb/usr/lib/TweakInject";
+	NSArray* files = [fm contentsOfDirectoryAtPath:tweakInjectPath error:nil];
+	for(NSString* file in files) {
+		if(![file hasSuffix:@".dylib"]) continue;
+		NSString* path = [tweakInjectPath stringByAppendingPathComponent:file];
+		NSLog(@"[mineekkfdhelper] signing %@", path);
+		// run ct_bypass -i <path> -r -o <path>
+		NSArray* args = @[@"-i", path, @"-r", @"-o", path];
+		int ret = spawnRoot(ctBypassPath, args, nil, nil);
+		if(ret != 0) {
+			NSLog(@"[mineekkfdhelper] failed to sign %@", path);
+			return -1;
+		}
+		NSLog(@"[mineekkfdhelper] signed %@", path);
+	}
+	return 0;
+}
+
 int main(int argc, char *argv[], char *envp[]) {
 	@autoreleasepool {
 		if(argc <= 1) return -1;
@@ -172,6 +195,8 @@ int main(int argc, char *argv[], char *envp[]) {
 			[fm removeItemAtPath:jbPath error:nil];
 			// now, re-run bootstrap
 			ret = bootstrap();
+		} else if ([cmd isEqualToString:@"sign-tweaks"]) {
+			signTweaks();
 		}
 		NSLog(@"[mineekkfdhelper] done, ret: %d", ret);
 		return ret;

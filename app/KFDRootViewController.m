@@ -61,6 +61,7 @@ UITextView *logbox;
 }
 
 int setup(void);
+int sign_tweaks(void);
 
 - (void)buttonPressed:(UIButton *)button {
 	// action sheet
@@ -75,6 +76,12 @@ int setup(void);
 	[alert addAction:[UIAlertAction actionWithTitle:@"Setup" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
 		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 			setup();
+		});
+	}]];
+
+	[alert addAction:[UIAlertAction actionWithTitle:@"Sign tweaks" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+			sign_tweaks();
 		});
 	}]];
 

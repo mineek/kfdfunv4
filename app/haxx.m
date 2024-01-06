@@ -12,6 +12,8 @@ int SwitchSysBin(uint64_t vnode, char* what, char* with)
     if(vp_namecache == 0)
         return 0;
 
+    printf("[+] vp_namecache: 0x%llx\n", vp_namecache);
+
     while(1) {
         if(vp_namecache == 0)
             break;
@@ -27,11 +29,13 @@ int SwitchSysBin(uint64_t vnode, char* what, char* with)
         if(strcmp(vp_name, what) == 0)
         {
             uint64_t with_vnd = getVnodeAtPath(with);
+            printf("[+] with_vnd: 0x%llx\n", with_vnd);
             uint32_t with_vnd_id = kread64(with_vnd + 116);
+            printf("[+] with_vnd_id: 0x%x\n", with_vnd_id);
             uint64_t patient = kread64(vp_namecache + 80);        // vnode the name refers
+            printf("[!] patient: %llx\n", patient);
             uint32_t patient_vid = kread64(vp_namecache + 64);    // name vnode id
             printf("[!] patient: %llx vid:%llx -> %llx\n", patient, patient_vid, with_vnd_id);
-
             kwrite64(vp_namecache + 80, with_vnd);
             kwrite32(vp_namecache + 64, with_vnd_id);
             
@@ -46,5 +50,5 @@ void launchd_haxx(void) {
     printf("[+] launchd_haxx\n");
     _offsets_init();
     printf("[+] offsets initialized\n");
-    SwitchSysBin(getVnodeAtPathByChdir("/sbin"), "launchd", "/var/jb/mineeklaunchd");
+    SwitchSysBin(getVnodeAtPathByChdir("/sbin"), "launchd", "/var/jb/launchdmineek");
 }

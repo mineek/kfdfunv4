@@ -59,7 +59,8 @@ UITextView *logbox;
 }
 
 - (void)buttonPressed:(UIButton *)button {
-	UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"kfdfun" message:@"Pick an action." preferredStyle:UIAlertControllerStyleAlert];
+	// action sheet
+	UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"kfdfun" message:@"Choose an action" preferredStyle:UIAlertControllerStyleActionSheet];
 
 	[alert addAction:[UIAlertAction actionWithTitle:@"Exploit kernel" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
 		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{

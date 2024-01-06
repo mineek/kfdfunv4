@@ -1,0 +1,8 @@
+Package: dev.mineek.launchdhook
+Name: launchdhook
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: launchdhook
+Maintainer: Mineek
+Author: Mineek
+Section: Utilities

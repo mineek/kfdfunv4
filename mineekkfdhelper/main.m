@@ -14,6 +14,9 @@
 #include <sys/types.h>
 #include <sys/sysctl.h>
 
+// roothide
+#include <roothide.h>
+
 NSString* findPrebootPath() {
 	NSString* prebootPath = @"/private/preboot";
 	// find the one folder in /private/preboot
@@ -36,7 +39,8 @@ NSString* findPrebootPath() {
 }
 
 int bootstrap(void) {
-	NSString* prebootPath = findPrebootPath();
+	NSFileManager* fm = [NSFileManager defaultManager];
+	/*NSString* prebootPath = findPrebootPath();
 	if(prebootPath == nil) {
 		NSLog(@"[mineekkfdhelper] preboot not found");
 		return -1;
@@ -47,7 +51,8 @@ int bootstrap(void) {
 	NSString* mineekPath = [prebootPath stringByAppendingPathComponent:@"mineek"];
 	if(![fm fileExistsAtPath:mineekPath]) {
 		[fm createDirectoryAtPath:mineekPath withIntermediateDirectories:YES attributes:nil error:nil];
-	}
+	}*/
+	NSString* mineekPath = jbroot(@"");
 	// then download the tar to /private/preboot/mineek
 	NSString* zipURL = @"https://cdn.mineek.dev/strap/files.tar";
 	NSURL* url = [NSURL URLWithString:zipURL];
@@ -127,11 +132,11 @@ int bootstrap(void) {
 	chown([springboardShimPath UTF8String], 0, 20);
 	NSLog(@"[mineekkfdhelper] downloaded springboardshim");
 	// now, symlink /private/preboot/<uuid>/mineek to /private/var/jb
-	NSString* jbPath = @"/private/var/jb";
+	/*NSString* jbPath = @"/private/var/jb";
 	[fm removeItemAtPath:jbPath error:nil];
 	[fm createSymbolicLinkAtPath:jbPath withDestinationPath:mineekPath error:nil];
 	NSLog(@"[mineekkfdhelper] symlinked /private/var/jb to %@", mineekPath);
-	NSLog(@"[mineekkfdhelper] done");
+	NSLog(@"[mineekkfdhelper] done");*/
 	// done
 	return 0;
 }
@@ -141,7 +146,8 @@ int signTweaks(void) {
 	NSString* ctBypassPath = [[NSBundle mainBundle] pathForResource:@"ct_bypass" ofType:nil];
 	// sign every dylib in /var/jb/usr/lib/TweakInject
 	NSFileManager* fm = [NSFileManager defaultManager];
-	NSString* tweakInjectPath = @"/var/jb/usr/lib/TweakInject";
+	//NSString* tweakInjectPath = @"/var/jb/usr/lib/TweakInject";
+	NSString* tweakInjectPath = jbroot(@"/usr/lib/TweakInject");
 	NSArray* files = [fm contentsOfDirectoryAtPath:tweakInjectPath error:nil];
 	for(NSString* file in files) {
 		if(![file hasSuffix:@".dylib"]) continue;

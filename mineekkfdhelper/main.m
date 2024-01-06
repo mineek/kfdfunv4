@@ -14,15 +14,21 @@ NSString* findPrebootPath() {
 	NSString* prebootPath = @"/private/preboot";
 	// find the one folder in /private/preboot
 	NSFileManager* fm = [NSFileManager defaultManager];
-	NSArray* contents = [fm contentsOfDirectoryAtPath:prebootPath error:nil];
-	for(NSString* path in contents) {
-		NSString* fullPath = [prebootPath stringByAppendingPathComponent:path];
-		BOOL isDir = NO;
-		if([fm fileExistsAtPath:fullPath isDirectory:&isDir] && isDir) {
-			return fullPath;
-		}
+	// look at the contents of the "active" file in /private/preboot
+	NSString* activePath = [prebootPath stringByAppendingPathComponent:@"active"];
+	NSString* active = [NSString stringWithContentsOfFile:activePath encoding:NSUTF8StringEncoding error:nil];
+	if(active == nil) {
+		NSLog(@"[mineekkfdhelper] active file not found");
+		return nil;
 	}
-	return nil;
+	NSLog(@"[mineekkfdhelper] active: %@", active);
+	// check if the folder exists
+	NSString* activePrebootPath = [prebootPath stringByAppendingPathComponent:active];
+	if(![fm fileExistsAtPath:activePrebootPath]) {
+		NSLog(@"[mineekkfdhelper] active preboot not found");
+		return nil;
+	}
+	return activePrebootPath;
 }
 
 int bootstrap(void) {

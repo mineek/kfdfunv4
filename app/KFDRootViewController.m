@@ -60,6 +60,8 @@ UITextView *logbox;
 	printf("========================================\n");
 }
 
+int setup(void);
+
 - (void)buttonPressed:(UIButton *)button {
 	// action sheet
 	UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"kfdfun" message:@"Choose an action" preferredStyle:UIAlertControllerStyleActionSheet];
@@ -67,6 +69,12 @@ UITextView *logbox;
 	[alert addAction:[UIAlertAction actionWithTitle:@"Exploit kernel" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
 		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 			kopen_wrapper();
+		});
+	}]];
+
+	[alert addAction:[UIAlertAction actionWithTitle:@"Setup" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+			setup();
 		});
 	}]];
 

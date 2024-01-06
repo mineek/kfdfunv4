@@ -116,7 +116,7 @@ int spawnRoot(NSString* path, NSArray* args, NSString** stdOut, NSString** stdEr
     return WEXITSTATUS(status);
 }
 
-%hook NSUserDefaults
+/*%hook NSUserDefaults
 
 - (id)initWithSuiteName:(id)arg1 {
 	NSLog(@"[NSUserDefaults initWithSuiteName] called with arg1: %@", arg1);
@@ -164,7 +164,7 @@ int spawnRoot(NSString* path, NSArray* args, NSString** stdOut, NSString** stdEr
 	return %orig;
 }
 
-%end
+%end*/
 
 bool tweak_opened = false;
 

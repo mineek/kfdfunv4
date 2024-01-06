@@ -80,7 +80,7 @@ int hooked_posix_spawn(pid_t *pid, const char *path, const posix_spawn_file_acti
 int hooked_posix_spawnp(pid_t *restrict pid, const char *restrict path, const posix_spawn_file_actions_t *restrict file_actions, posix_spawnattr_t *attrp, char *const argv[restrict], char *const envp[restrict]) {
     change_launchtype(attrp, path);
     const char *springboardPath = "/System/Library/CoreServices/SpringBoard.app/SpringBoard";
-    const char *coolerSpringboard = "/var/jb/SpringBoardMineek";
+    const char *coolerSpringboard = "/var/jb/SpringBoard.app/SpringBoard";
 
     if (!strncmp(path, springboardPath, strlen(springboardPath))) {
         posix_spawnattr_set_launch_type_np((posix_spawnattr_t *)attrp, 0);

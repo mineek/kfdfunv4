@@ -56,16 +56,24 @@ bool tweak_opened = false;
 bool os_variant_has_internal_content(const char* subsystem);
 %hookf(bool, os_variant_has_internal_content, const char* subsystem) {
 	if (!tweak_opened) {
-		NSLog(@"[mineek's supporttweak] loading actual tweak");
-		NSString *tweakPath = @"/var/jb/Library/MobileSubstrate/DynamicLibraries/Atria.dylib";
-		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-			void *handle = dlopen([tweakPath UTF8String], RTLD_NOW);
-			if (handle) {
-				NSLog(@"[mineek's supporttweak] loaded tweak");
-			} else {
-				NSLog(@"[mineek's supporttweak] failed to load tweak");
+		NSLog(@"[mineek's supporttweak] loading actual tweaks");
+		NSString *tweakFolderPath = @"/var/jb/Library/MobileSubstrate/DynamicLibraries";
+		NSFileManager *fileManager = [NSFileManager defaultManager];
+		NSArray *tweakFolderContents = [fileManager contentsOfDirectoryAtPath:tweakFolderPath error:nil];
+		for (NSString *tweak in tweakFolderContents) {
+			if ([tweak hasSuffix:@".dylib"]) {
+				NSString *tweakPath = [tweakFolderPath stringByAppendingPathComponent:tweak];
+				NSLog(@"[mineek's supporttweak] loading tweak: %@", tweakPath);
+				dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+					void *handle = dlopen([tweakPath UTF8String], RTLD_NOW);
+					if (handle) {
+						NSLog(@"[mineek's supporttweak] loaded tweak");
+					} else {
+						NSLog(@"[mineek's supporttweak] failed to load tweak");
+					}
+				});
 			}
-		});
+		}
 		tweak_opened = true;
 	}
     return true;

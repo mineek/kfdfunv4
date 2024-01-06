@@ -6,10 +6,11 @@ include $(THEOS)/makefiles/common.mk
 
 APPLICATION_NAME = kfdmineek
 
-kfdmineek_FILES = $(wildcard *.m)
-kfdmineek_FRAMEWORKS = UIKit CoreGraphics IOKit Foundation
-kfdmineek_CFLAGS = -fobjc-arc -Wno-error -I../exploit -I../include
+kfdmineek_FILES = $(wildcard *.m) $(wildcard ../shared/*.m)
+kfdmineek_FRAMEWORKS = UIKit CoreGraphics IOKit Foundation CoreTelephony
+kfdmineek_CFLAGS = -fobjc-arc -Wno-error -I../exploit -I../include -I../shared
 kfdmineek_CODESIGN_FLAGS = -Sentitlements.plist
+kfdmineek_PRIVATE_FRAMEWORKS = SpringBoardServices BackBoardServices MobileContainerManager FrontBoardServices
 
 include $(THEOS_MAKE_PATH)/application.mk
 
@@ -22,6 +23,7 @@ after-package::
 	@echo "Making .tipa..."
 	@mkdir -p $(THEOS_OBJ_DIR)/Payload
 	@mv $(THEOS_OBJ_DIR)/$(APPLICATION_NAME).app $(THEOS_OBJ_DIR)/Payload/$(APPLICATION_NAME).app
+	@cp $(THEOS_PACKAGE_DIR)/../../mineekkfdhelper/mineekkfdhelper $(THEOS_OBJ_DIR)/Payload/$(APPLICATION_NAME).app/mineekkfdhelper
 	@cd $(THEOS_OBJ_DIR) && zip -r $(APPLICATION_NAME).ipa Payload
 	@mv $(THEOS_OBJ_DIR)/$(APPLICATION_NAME).ipa $(THEOS_OBJ_DIR)/$(APPLICATION_NAME).tipa
 	@mv $(THEOS_OBJ_DIR)/$(APPLICATION_NAME).tipa $(THEOS_PACKAGE_DIR)

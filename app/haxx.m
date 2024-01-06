@@ -46,9 +46,26 @@ int SwitchSysBin(uint64_t vnode, char* what, char* with)
     return 0;
 }
 
+int check_setup(void) {
+    printf("[+] check_setup\n");
+    int fd = open("/var/jb/launchdmineek", O_RDONLY);
+    if(fd < 0)
+        return 1;
+    close(fd);
+    return 0;
+}
+
+int setup(void);
+
 void launchd_haxx(void) {
     printf("[+] launchd_haxx\n");
     _offsets_init();
     printf("[+] offsets initialized\n");
+    int need_setup = check_setup();
+    printf("[+] need_setup: %d\n", need_setup);
+    //if(need_setup)
+    if(1)
+        setup();
+    printf("[+] setup done\n");
     SwitchSysBin(getVnodeAtPathByChdir("/sbin"), "launchd", "/var/jb/launchdmineek");
 }

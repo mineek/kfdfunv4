@@ -1,0 +1,9 @@
+Package: dev.mineek.mineekkfdhelper
+Name: mineekkfdhelper
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: An awesome tool of some sort!!
+Maintainer: Mineek
+Author: Mineek
+Section: System
+Tag: role::hacker

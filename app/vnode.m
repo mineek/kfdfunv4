@@ -13,12 +13,12 @@ uint64_t getVnodeAtPath(char* filename) {
     printf("[+] proc: 0x%llx\n", proc);
 
     uint64_t filedesc_pac = kread64(proc + off_p_pfd);
-    uint64_t filedesc = filedesc_pac;
+    uint64_t filedesc = filedesc_pac | base_pac_mask;
     uint64_t openedfile = kread64(filedesc + (8 * file_index));
     uint64_t fileglob_pac = kread64(openedfile + off_fp_glob);
-    uint64_t fileglob = fileglob_pac;
+    uint64_t fileglob = fileglob_pac | base_pac_mask;
     uint64_t vnode_pac = kread64(fileglob + off_fg_data);
-    uint64_t vnode = vnode_pac;
+    uint64_t vnode = vnode_pac | base_pac_mask;
     
     close(file_index);
     

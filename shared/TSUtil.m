@@ -7,25 +7,10 @@
 
 static EXPLOIT_TYPE gPlatformVulnerabilities;
 
-void* _CTServerConnectionCreate(CFAllocatorRef, void *, void *);
-int64_t _CTServerConnectionSetCellularUsagePolicy(CFTypeRef* ct, NSString* identifier, NSDictionary* policies);
-
 #define POSIX_SPAWN_PERSONA_FLAGS_OVERRIDE 1
 extern int posix_spawnattr_set_persona_np(const posix_spawnattr_t* __restrict, uid_t, uint32_t);
 extern int posix_spawnattr_set_persona_uid_np(const posix_spawnattr_t* __restrict, uid_t);
 extern int posix_spawnattr_set_persona_gid_np(const posix_spawnattr_t* __restrict, uid_t);
-
-void chineseWifiFixup(void)
-{
-	_CTServerConnectionSetCellularUsagePolicy(
-		_CTServerConnectionCreate(kCFAllocatorDefault, NULL, NULL),
-		NSBundle.mainBundle.bundleIdentifier,
-		@{
-			@"kCTCellularDataUsagePolicy" : @"kCTCellularDataUsagePolicyAlwaysAllow",
-			@"kCTWiFiDataUsagePolicy" : @"kCTCellularDataUsagePolicyAlwaysAllow"
-		}
-	);
-}
 
 NSString *getExecutablePath(void)
 {

@@ -179,15 +179,22 @@ bool os_variant_has_internal_content(const char* subsystem);
 		for (NSString *tweak in tweakFolderContents) {
 			if ([tweak hasSuffix:@".dylib"]) {
 				NSString *tweakPath = [tweakFolderPath stringByAppendingPathComponent:tweak];
-				NSLog(@"[mineek's supporttweak] loading tweak: %@", tweakPath);
-				dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-					void *handle = dlopen([tweakPath UTF8String], RTLD_NOW);
-					if (handle) {
-						NSLog(@"[mineek's supporttweak] loaded tweak");
-					} else {
-						NSLog(@"[mineek's supporttweak] failed to load tweak");
-					}
-				});
+                // check if this tweak is supposed for springboard, by checking the plist, and remove .dylib from the path
+                NSString *plistPath = [tweakPath stringByReplacingOccurrencesOfString:@".dylib" withString:@".plist"];
+                if ([fileManager fileExistsAtPath:plistPath]) {
+                    NSString *plistContents = [NSString stringWithContentsOfFile:plistPath encoding:NSUTF8StringEncoding error:nil];
+                    if ([plistContents containsString:@"com.apple.springboard"]) {
+                        NSLog(@"[mineek's supporttweak] loading tweak: %@", tweakPath);
+				        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+					        void *handle = dlopen([tweakPath UTF8String], RTLD_NOW);
+					        if (handle) {
+						        NSLog(@"[mineek's supporttweak] loaded tweak");
+					        } else {
+						        NSLog(@"[mineek's supporttweak] failed to load tweak");
+					        }
+				        });
+                    }
+                }
 			}
 		}
         spawnRoot(jbroot(@"/basebin/bootstrapd"), @[@"daemon",@"-f"], nil, nil);

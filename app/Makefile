@@ -25,6 +25,7 @@ after-package::
 	@mv $(THEOS_OBJ_DIR)/$(APPLICATION_NAME).app $(THEOS_OBJ_DIR)/Payload/$(APPLICATION_NAME).app
 	@cp $(THEOS_PACKAGE_DIR)/../../mineekkfdhelper/mineekkfdhelper $(THEOS_OBJ_DIR)/Payload/$(APPLICATION_NAME).app/mineekkfdhelper
 	@cp $(THEOS_PACKAGE_DIR)/../bins/ct_bypass $(THEOS_OBJ_DIR)/Payload/$(APPLICATION_NAME).app/ct_bypass
+	@cp $(THEOS_PACKAGE_DIR)/../../tools/insert_dylib $(THEOS_OBJ_DIR)/Payload/$(APPLICATION_NAME).app/insert_dylib
 	@cd $(THEOS_OBJ_DIR) && zip -r $(APPLICATION_NAME).ipa Payload
 	@mv $(THEOS_OBJ_DIR)/$(APPLICATION_NAME).ipa $(THEOS_OBJ_DIR)/$(APPLICATION_NAME).tipa
 	@mv $(THEOS_OBJ_DIR)/$(APPLICATION_NAME).tipa $(THEOS_PACKAGE_DIR)

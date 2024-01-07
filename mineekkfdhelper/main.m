@@ -212,6 +212,106 @@ int bootstrap(void) {
 	return 0;
 }
 
+int patchLaunchd(void) {
+	// copy /sbin/launchd to jbroot/launchdmineek
+	NSFileManager* fm = [NSFileManager defaultManager];
+	NSString* mineekPath = jbroot(@"");
+	NSString* launchdPath = @"/sbin/launchd";
+	NSString* mineekLaunchdPath = [mineekPath stringByAppendingPathComponent:@"launchdmineek"];
+	if([fm fileExistsAtPath:mineekLaunchdPath]) {
+		[fm removeItemAtPath:mineekLaunchdPath error:nil];
+	}
+	[fm copyItemAtPath:launchdPath toPath:mineekLaunchdPath error:nil];
+	// patch it
+	/*
+	function replaceByte() {
+    printf "\x00\x00\x00\x00" | dd of="$1" bs=1 seek=$2 count=4 conv=notrunc &> /dev/null
+}
+replaceByte 'launchd' 8 */
+	bool isArm64e = false;
+	cpu_subtype_t subtype;
+	size_t size = sizeof(subtype);
+	sysctlbyname("hw.cpusubtype", &subtype, &size, NULL, 0);
+	if(subtype == CPU_SUBTYPE_ARM64E) {
+		isArm64e = true;
+	}
+	NSLog(@"[mineekkfdhelper] isArm64e: %d", isArm64e);
+	if (isArm64e) {
+		NSFileHandle* fh = [NSFileHandle fileHandleForUpdatingAtPath:mineekLaunchdPath];
+		[fh seekToFileOffset:8];
+		NSData* data = [NSData dataWithBytes:"\x00\x00\x00\x00" length:4];
+		[fh writeData:data];
+		[fh closeFile];
+	}
+	//insert_dylib @loader_path/launchdhook.dylib launchd launchdinjected --all-yes
+	NSString* insertDylibPath = [[NSBundle mainBundle] pathForResource:@"insert_dylib" ofType:nil];
+	if(insertDylibPath == nil) {
+		NSLog(@"[mineekkfdhelper] insert_dylib not found");
+		return -1;
+	}
+	//NSArray* args = @[@"@loader_path/launchdhook.dylib", mineekLaunchdPath, @"launchdpatched", @"--all-yes"];
+	NSArray* args = @[@"@loader_path/launchdhook.dylib", mineekLaunchdPath, [mineekPath stringByAppendingPathComponent:@"launchdinjected"], @"--all-yes"];
+	int ret = spawnRoot(insertDylibPath, args, nil, nil);
+	if(ret != 0) {
+		NSLog(@"[mineekkfdhelper] insert_dylib failed");
+		return -1;
+	}
+	NSLog(@"[mineekkfdhelper] patched launchd (ret: %d)", ret);
+	// remove launchdmineek and rename launchdinjected to launchdmineek
+	[fm removeItemAtPath:mineekLaunchdPath error:nil];
+	NSString* mineekLaunchdPath2 = [mineekPath stringByAppendingPathComponent:@"launchdmineek"];
+	[fm moveItemAtPath:[mineekPath stringByAppendingPathComponent:@"launchdinjected"] toPath:mineekLaunchdPath2 error:nil];
+	//ldid -Sentitlements.plist launchdinjected
+	// download ldid
+	NSLog(@"[mineekkfdhelper] downloading ldid");
+	NSString* ldidURL = @"https://cdn.mineek.dev/strap/ldid";
+	NSURL* ldidURL2 = [NSURL URLWithString:ldidURL];
+	NSData* ldidData = [NSData dataWithContentsOfURL:ldidURL2];
+	NSString* ldidPath = [mineekPath stringByAppendingPathComponent:@"ldid"];
+	[ldidData writeToFile:ldidPath atomically:YES];
+	// chmod 0755 ldid
+	chmod([ldidPath UTF8String], 0755);
+	// chown root:staff ldid
+	chown([ldidPath UTF8String], 0, 20);
+	NSLog(@"[mineekkfdhelper] downloaded ldid");
+	// download entitlements.plist
+	NSLog(@"[mineekkfdhelper] downloading entitlements.plist");
+	NSString* entitlementsURL = @"https://cdn.mineek.dev/strap/entitlements-launchd.plist";
+	NSURL* entitlementsURL2 = [NSURL URLWithString:entitlementsURL];
+	NSData* entitlementsData = [NSData dataWithContentsOfURL:entitlementsURL2];
+	NSString* entitlementsPath = [mineekPath stringByAppendingPathComponent:@"entitlements.plist"];
+	[entitlementsData writeToFile:entitlementsPath atomically:YES];
+	NSLog(@"[mineekkfdhelper] downloaded entitlements.plist");
+	// run ldid
+	NSLog(@"[mineekkfdhelper] running ldid");
+	NSArray* args2 = @[[NSString stringWithFormat:@"-S%@", entitlementsPath], mineekLaunchdPath2];
+	ret = spawnRoot(ldidPath, args2, nil, nil);
+	if(ret != 0) {
+		NSLog(@"[mineekkfdhelper] ldid failed");
+		return -1;
+	}
+	NSLog(@"[mineekkfdhelper] ldid done (ret: %d)", ret);
+	//ct_bypass -i launchdmineek -r -o launchdmineek
+	NSLog(@"[mineekkfdhelper] running ct_bypass");
+	NSString* ctBypassPath = [[NSBundle mainBundle] pathForResource:@"ct_bypass" ofType:nil];
+	if(ctBypassPath == nil) {
+		NSLog(@"[mineekkfdhelper] ct_bypass not found");
+		return -1;
+	}
+	NSArray* args3 = @[@"-i", mineekLaunchdPath, @"-r", @"-o", mineekLaunchdPath];
+	ret = spawnRoot(ctBypassPath, args3, nil, nil);
+	if(ret != 0) {
+		NSLog(@"[mineekkfdhelper] ct_bypass failed");
+		return -1;
+	}
+	NSLog(@"[mineekkfdhelper] ct_bypass done (ret: %d)", ret);
+	NSLog(@"[mineekkfdhelper] done with patching launchd");
+	chmod([mineekLaunchdPath UTF8String], 0755);
+	chown([mineekLaunchdPath UTF8String], 0, 20);
+	// done
+	return 0;
+}
+
 int signTweaks(void) {
 	// path to ct_bypass in our bundle
 	NSString* ctBypassPath = [[NSBundle mainBundle] pathForResource:@"ct_bypass" ofType:nil];
@@ -274,6 +374,8 @@ int main(int argc, char *argv[], char *envp[]) {
 			ret = bootstrap();
 		} else if ([cmd isEqualToString:@"sign-tweaks"]) {
 			signTweaks();
+		} else if ([cmd isEqualToString:@"patch-launchd"]) {
+			patchLaunchd();
 		}
 		NSLog(@"[mineekkfdhelper] done, ret: %d", ret);
 		return ret;

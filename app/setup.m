@@ -28,7 +28,12 @@ int setup(void) {
     if(ret != 0)
         goto err;
     printf("[+] install-bootstrap verified!\n");
-success:
+    printf("[+] patching launchd\n");
+    ret = spawnRoot(rootHelperPath(), @[@"patch-launchd"], nil, nil);
+    printf("[+] ret: %d\n", ret);
+    if(ret != 0)
+        goto err;
+    printf("[+] patch-launchd success\n");
     printf("[+] setup success\n");
     return 0;
 err:

@@ -66,7 +66,7 @@ int sign_tweaks(void);
 
 - (void)buttonPressed:(UIButton *)button {
 	// action sheet
-	#ifdef MANUAL_EXPLOIT_METHOD
+	#ifdef USE_MANUAL_EXPLOIT_METHOD
 	UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"kfdfun" message:@"Choose an action" preferredStyle:UIAlertControllerStyleActionSheet];
 
 	[alert addAction:[UIAlertAction actionWithTitle:@"Exploit kernel" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {

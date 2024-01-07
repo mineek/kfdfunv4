@@ -7,7 +7,7 @@
 
 uint64_t _kfd = 0;
 
-uint64_t kopen_wrapper(void) {
+uint64_t kopen_wrapper(int exploit_method) {
     uint64_t headroomMB = 384;
     bool use_headroom = true;
     if (use_headroom) {
@@ -50,7 +50,7 @@ uint64_t kopen_wrapper(void) {
             NSLog(CFSTR("[memoryHogger] Did not hog memory because there is too little free memory"));
         }
         
-        _kfd = kopen(3072, 2, 1, 1);
+        _kfd = kopen(3072, exploit_method, 1, 1);
         
         if (memory_hog) free(memory_hog);
         if (old_memory_limit) {

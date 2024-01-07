@@ -6,7 +6,7 @@
 extern uint64_t _kfd;
 extern signed long long base_pac_mask;
 
-uint64_t kopen_wrapper(void);
+uint64_t kopen_wrapper(int exploit_method);
 int is_exploited(void);
 
 void do_kread(uint64_t kaddr, void* uaddr, uint64_t size);

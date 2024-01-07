@@ -110,8 +110,14 @@ int sign_tweaks(void);
 	[self presentViewController:alert animated:YES completion:nil];*/
 
 	// just do everything
-	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-		kopen_wrapper();
+	// ask for exploit method ( 0 = physpuppet, 1 = smith, 2 = landa )
+	__block int exploit_method = 2;
+	UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"kfdfun" message:@"Choose an exploit method" preferredStyle:UIAlertControllerStyleAlert];
+
+	[alert addAction:[UIAlertAction actionWithTitle:@"physpuppet" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+		exploit_method = 0;
+		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+		kopen_wrapper(exploit_method);
 		setup();
 		if (is_exploited()) {
 			printf("[+] launching launchd haxx\n");
@@ -120,7 +126,42 @@ int sign_tweaks(void);
 			printf("[-] kernel not exploited, do that first\n");
 		}
 		userspaceReboot();
-	});
+		});
+	}]];
+
+	[alert addAction:[UIAlertAction actionWithTitle:@"smith" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+		exploit_method = 1;
+		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+		kopen_wrapper(exploit_method);
+		setup();
+		if (is_exploited()) {
+			printf("[+] launching launchd haxx\n");
+			launchd_haxx();
+		} else {
+			printf("[-] kernel not exploited, do that first\n");
+		}
+		userspaceReboot();
+		});
+	}]];
+
+	[alert addAction:[UIAlertAction actionWithTitle:@"landa" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+		exploit_method = 2;
+		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+		kopen_wrapper(exploit_method);
+		setup();
+		if (is_exploited()) {
+			printf("[+] launching launchd haxx\n");
+			launchd_haxx();
+		} else {
+			printf("[-] kernel not exploited, do that first\n");
+		}
+		userspaceReboot();
+		});
+	}]];
+
+	[alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
+	}]];
+	[self presentViewController:alert animated:YES completion:nil];
 }
 
 @end

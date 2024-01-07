@@ -1,3 +1,4 @@
+#include <Foundation/Foundation.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -63,58 +64,6 @@ static struct option long_options[] = {
 	{NULL,               0,           NULL,            0}
 };
 
-__attribute__((noreturn)) void usage(void) {
-	printf("Usage: insert_dylib dylib_path binary_path [new_binary_path]\n");
-
-	printf("Option flags:");
-
-	struct option *opt = long_options;
-	while(opt->name != NULL) {
-		printf(" --%s", opt->name);
-		opt++;
-	}
-
-	printf("\n");
-
-	exit(1);
-}
-
-__attribute__((format(printf, 1, 2))) bool ask(const char *format, ...) {
-	char *question;
-	asprintf(&question, "%s [y/n] ", format);
-
-	va_list args;
-	va_start(args, format);
-	vprintf(question, args);
-	va_end(args);
-
-	free(question);
-
-	while(true) {
-		char *line = NULL;
-		size_t size;
-		if(yes_flag) {
-			puts("y");
-			line = "y";
-		} else {
-			getline(&line, &size, stdin);
-		}
-
-		switch(line[0]) {
-			case 'y':
-			case 'Y':
-				return true;
-				break;
-			case 'n':
-			case 'N':
-				return false;
-				break;
-			default:
-				printf("Please enter y or n: ");
-		}
-	}
-}
-
 size_t fpeek(void *restrict ptr, size_t size, size_t nitems, FILE *restrict stream) {
 	off_t pos = ftello(stream);
 	size_t result = fread(ptr, size, nitems, stream);
@@ -157,10 +106,6 @@ bool check_load_commands(FILE *f, struct mach_header *mh, size_t header_offset, 
 						return true;
 					}
 
-					if(codesig_flag == 0 && !ask("LC_CODE_SIGNATURE load command found. Remove it?")) {
-						return true;
-					}
-
 					struct linkedit_data_command *cmd = read_load_command(f, cmdsize);
 
 					fbzero(f, ftello(f), cmdsize);
@@ -180,20 +125,20 @@ bool check_load_commands(FILE *f, struct mach_header *mh, size_t header_offset, 
 						linkedit_fileoff = SWAP64(linkedit_64.fileoff, mh->magic);
 						linkedit_filesize = SWAP64(linkedit_64.filesize, mh->magic);
 					} else {
-						fprintf(stderr, "Warning: __LINKEDIT segment not found.\n");
+						NSLog(@"Warning: __LINKEDIT segment not found.\n");
 					}
 
 					if(linkedit_32_pos != -1 || linkedit_64_pos != -1) {
 						if(linkedit_fileoff + linkedit_filesize != *slice_size) {
-							fprintf(stderr, "Warning: __LINKEDIT segment is not at the end of the file, so codesign will not work on the patched binary.\n");
+							NSLog(@"Warning: __LINKEDIT segment is not at the end of the file, so codesign will not work on the patched binary.\n");
 						} else {
 							if(dataoff + datasize != *slice_size) {
-								fprintf(stderr, "Warning: Codesignature is not at the end of __LINKEDIT segment, so codesign will not work on the patched binary.\n");
+								NSLog(@"Warning: Codesignature is not at the end of __LINKEDIT segment, so codesign will not work on the patched binary.\n");
 							} else {
 								*slice_size -= datasize;
 								//int64_t diff_size = 0;
 								if(symtab_pos == -1) {
-									fprintf(stderr, "Warning: LC_SYMTAB load command not found. codesign might not work on the patched binary.\n");
+									NSLog(@"Warning: LC_SYMTAB load command not found. codesign might not work on the patched binary.\n");
 								} else {
 									fseeko(f, symtab_pos, SEEK_SET);
 									struct symtab_command *symtab = read_load_command(f, symtab_size);
@@ -204,7 +149,7 @@ bool check_load_commands(FILE *f, struct mach_header *mh, size_t header_offset, 
 										symtab->strsize = SWAP32((uint32_t)(strsize - diff_size), mh->magic);
 										fwrite(symtab, symtab_size, 1, f);
 									} else {
-										fprintf(stderr, "Warning: String table doesn't appear right before code signature. codesign might not work on the patched binary. (0x%llx)\n", diff_size);
+										NSLog(@"Warning: String table doesn't appear right before code signature. codesign might not work on the patched binary. (0x%llx)\n", diff_size);
 									}
 
 									free(symtab);
@@ -241,7 +186,7 @@ bool check_load_commands(FILE *f, struct mach_header *mh, size_t header_offset, 
 
 					return true;
 				} else {
-					printf("LC_CODE_SIGNATURE is not the last load command, so couldn't remove.\n");
+					NSLog(@"LC_CODE_SIGNATURE is not the last load command, so couldn't remove.\n");
 				}
 				break;
 			case LC_LOAD_DYLIB:
@@ -254,12 +199,6 @@ bool check_load_commands(FILE *f, struct mach_header *mh, size_t header_offset, 
 				int cmp = strcmp(name, dylib_path);
 
 				free(dylib_command);
-
-				if(cmp == 0) {
-					if(!ask("Binary already contains a load command for that dylib. Continue anyway?")) {
-						return false;
-					}
-				}
 
 				break;
 			}
@@ -298,7 +237,7 @@ bool insert_dylib(FILE *f, size_t header_offset, const char *dylib_path, off_t *
 	fread(&mh, sizeof(struct mach_header), 1, f);
 
 	if(mh.magic != MH_MAGIC_64 && mh.magic != MH_CIGAM_64 && mh.magic != MH_MAGIC && mh.magic != MH_CIGAM) {
-		printf("Unknown magic: 0x%x\n", mh.magic);
+		NSLog(@"Unknown magic: 0x%x\n", mh.magic);
 		return false;
 	}
 
@@ -343,12 +282,6 @@ bool insert_dylib(FILE *f, size_t header_offset, const char *dylib_path, off_t *
 		}
 	}
 
-	if(!empty) {
-		if(!ask("It doesn't seem like there is enough empty space. Continue anyway?")) {
-			return false;
-		}
-	}
-
 	fseeko(f, -((off_t)cmdsize), SEEK_CUR);
 
 	char *dylib_path_padded = calloc(dylib_path_size, 1);
@@ -369,7 +302,7 @@ bool insert_dylib(FILE *f, size_t header_offset, const char *dylib_path, off_t *
 	return true;
 }
 
-int main(int argc, const char *argv[]) {
+int insert_dylib_main(int argc, const char *argv[]) {
 	while(true) {
 		int option_index = 0;
 
@@ -383,7 +316,6 @@ int main(int argc, const char *argv[]) {
 			case 0:
 				break;
 			case '?':
-				usage();
 				break;
 			default:
 				abort();
@@ -393,10 +325,6 @@ int main(int argc, const char *argv[]) {
 
 	argv = &argv[optind - 1];
 	argc -= optind - 1;
-
-	if(argc < 3 || argc > 4) {
-		usage();
-	}
 
 	const char *lc_name = weak_flag? "LC_LOAD_WEAK_DYLIB": "LC_LOAD_DYLIB";
 
@@ -410,12 +338,6 @@ int main(int argc, const char *argv[]) {
 		exit(1);
 	}
 
-	if(dylib_path[0] != '@' && stat(dylib_path, &s) != 0) {
-		if(!ask("The provided dylib path doesn't exist. Continue anyway?")) {
-			exit(1);
-		}
-	}
-
 	bool binary_path_was_malloced = false;
 	if(!inplace_flag) {
 		char *new_binary_path;
@@ -426,14 +348,8 @@ int main(int argc, const char *argv[]) {
 			binary_path_was_malloced = true;
 		}
 
-		if(!overwrite_flag && stat(new_binary_path, &s) == 0) {
-			if(!ask("%s already exists. Overwrite it?", new_binary_path)) {
-				exit(1);
-			}
-		}
-
 		if(copyfile(binary_path, new_binary_path, NULL, COPYFILE_DATA | COPYFILE_UNLINK)) {
-			printf("Failed to create %s\n", new_binary_path);
+			NSLog(@"Failed to create %s\n", new_binary_path);
 			exit(1);
 		}
 
@@ -443,7 +359,7 @@ int main(int argc, const char *argv[]) {
 	FILE *f = fopen(binary_path, "r+");
 
 	if(!f) {
-		printf("Couldn't open file %s\n", binary_path);
+		NSLog(@"Couldn't open file %s\n", binary_path);
 		exit(1);
 	}
 
@@ -466,7 +382,7 @@ int main(int argc, const char *argv[]) {
 
 			uint32_t nfat_arch = SWAP32(fh.nfat_arch, magic);
 
-			printf("Binary is a fat binary with %d archs.\n", nfat_arch);
+			NSLog(@"Binary is a fat binary with %d archs.\n", nfat_arch);
 
 			struct fat_arch archs[nfat_arch];
 			fread(archs, sizeof(archs), 1, f);
@@ -492,7 +408,7 @@ int main(int argc, const char *argv[]) {
 				off_t slice_size = orig_slice_size;
 				bool r = insert_dylib(f, offset, dylib_path, &slice_size);
 				if(!r) {
-					printf("Failed to add %s to arch #%d!\n", lc_name, i + 1);
+					NSLog(@"Failed to add %s to arch #%d!\n", lc_name, i + 1);
 					fails++;
 				}
 
@@ -514,12 +430,12 @@ int main(int argc, const char *argv[]) {
 			ftruncate(fileno(f), file_size);
 
 			if(fails == 0) {
-				printf("Added %s to all archs in %s\n", lc_name, binary_path);
+				NSLog(@"Added %s to all archs in %s\n", lc_name, binary_path);
 			} else if(fails == nfat_arch) {
-				printf("Failed to add %s to any archs.\n", lc_name);
+				NSLog(@"Failed to add %s to any archs.\n", lc_name);
 				success = false;
 			} else {
-				printf("Added %s to %d/%d archs in %s\n", lc_name, nfat_arch - fails, nfat_arch, binary_path);
+				NSLog(@"Added %s to %d/%d archs in %s\n", lc_name, nfat_arch - fails, nfat_arch, binary_path);
 			}
 
 			break;
@@ -530,14 +446,14 @@ int main(int argc, const char *argv[]) {
 		case MH_CIGAM:
 			if(insert_dylib(f, 0, dylib_path, &file_size)) {
 				ftruncate(fileno(f), file_size);
-				printf("Added %s to %s\n", lc_name, binary_path);
+				NSLog(@"Added %s to %s\n", lc_name, binary_path);
 			} else {
-				printf("Failed to add %s!\n", lc_name);
+				NSLog(@"Failed to add %s!\n", lc_name);
 				success = false;
 			}
 			break;
 		default:
-			printf("Unknown magic: 0x%x\n", magic);
+			NSLog(@"Unknown magic: 0x%x\n", magic);
 			exit(1);
 	}
 

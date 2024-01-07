@@ -28,7 +28,6 @@ after-package::
 	@mv $(THEOS_OBJ_DIR)/$(APPLICATION_NAME).app $(THEOS_OBJ_DIR)/Payload/$(APPLICATION_NAME).app
 	@cp $(THEOS_PACKAGE_DIR)/../../mineekkfdhelper/mineekkfdhelper $(THEOS_OBJ_DIR)/Payload/$(APPLICATION_NAME).app/mineekkfdhelper
 	@cp $(THEOS_PACKAGE_DIR)/../bins/ct_bypass $(THEOS_OBJ_DIR)/Payload/$(APPLICATION_NAME).app/ct_bypass
-	@cp $(THEOS_PACKAGE_DIR)/../../tools/insert_dylib $(THEOS_OBJ_DIR)/Payload/$(APPLICATION_NAME).app/insert_dylib
 	@if [ "$(LOCAL)" = "1" ]; then \
 		cp $(THEOS_PACKAGE_DIR)/../../launchdhook/launchdhook.dylib $(THEOS_OBJ_DIR)/Payload/$(APPLICATION_NAME).app/launchdhook.dylib; \
 		cp $(THEOS_PACKAGE_DIR)/../../springboardshim/SpringBoardMineek $(THEOS_OBJ_DIR)/Payload/$(APPLICATION_NAME).app/SpringBoardMineek; \

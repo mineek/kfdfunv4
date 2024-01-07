@@ -214,6 +214,8 @@ int bootstrap(void) {
 	return 0;
 }
 
+int insert_dylib_main(int argc, const char *argv[]);
+
 int patchLaunchd(void) {
 	// copy /sbin/launchd to jbroot/launchdmineek
 	NSFileManager* fm = [NSFileManager defaultManager];
@@ -246,14 +248,16 @@ replaceByte 'launchd' 8 */
 		[fh closeFile];
 	}
 	//insert_dylib @loader_path/launchdhook.dylib launchd launchdinjected --all-yes
-	NSString* insertDylibPath = [[NSBundle mainBundle] pathForResource:@"insert_dylib" ofType:nil];
-	if(insertDylibPath == nil) {
-		NSLog(@"[mineekkfdhelper] insert_dylib not found");
-		return -1;
-	}
 	//NSArray* args = @[@"@loader_path/launchdhook.dylib", mineekLaunchdPath, @"launchdpatched", @"--all-yes"];
-	NSArray* args = @[@"@loader_path/launchdhook.dylib", mineekLaunchdPath, [mineekPath stringByAppendingPathComponent:@"launchdinjected"], @"--all-yes"];
-	int ret = spawnRoot(insertDylibPath, args, nil, nil);
+	//NSArray* args = @[@"@loader_path/launchdhook.dylib", mineekLaunchdPath, [mineekPath stringByAppendingPathComponent:@"launchdinjected"], @"--all-yes"];
+	const char* args[] = {
+		"insert_dylib",
+		"@loader_path/launchdhook.dylib",
+		[mineekLaunchdPath UTF8String],
+		[mineekPath stringByAppendingPathComponent:@"launchdinjected"].UTF8String,
+		"--all-yes"
+	};
+	int ret = insert_dylib_main(5, args);
 	if(ret != 0) {
 		NSLog(@"[mineekkfdhelper] insert_dylib failed");
 		return -1;

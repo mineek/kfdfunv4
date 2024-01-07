@@ -204,6 +204,12 @@ bool os_variant_has_internal_content(const char* subsystem);
     return true;
 }
 
+%hook CSStatusTextView
+- (void)setInternalLegalText:(NSString *)string {
+    %orig(@"Thank you for using kfdmineek! <3");
+}
+%end
+
 #define CS_DEBUGGED 0x1000000
 int csops(pid_t pid, unsigned int  ops, void * useraddr, size_t usersize);
 int fork(void);

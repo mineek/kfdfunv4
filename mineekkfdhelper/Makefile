@@ -5,8 +5,8 @@ include $(THEOS)/makefiles/common.mk
 
 TOOL_NAME = mineekkfdhelper
 
-mineekkfdhelper_FILES = $(wildcard *.m) $(wildcard ../shared/*.m)
-mineekkfdhelper_CFLAGS = -fobjc-arc -I../shared
+mineekkfdhelper_FILES = $(wildcard *.m) $(wildcard *.c) $(wildcard ../shared/*.m)
+mineekkfdhelper_CFLAGS = -fobjc-arc -I../shared -Wno-error
 ifeq ($(LOCAL),1)
 	mineekkfdhelper_CFLAGS += -DUSE_LOCAL_FILES
 endif

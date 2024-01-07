@@ -12,7 +12,7 @@ local_mode=1 # 0 for remote, 1 for local
 
 # Build basebin
 for folder in "${folders[@]}"; do
-    cd $current_dir/../$folder
+    cd $current_dir/$folder
     echo "Making $folder..."
     if [ $local_mode -eq 1 ] && [ $folder == "mineekkfdhelper" ]; then
         ./build.sh local
@@ -21,11 +21,6 @@ for folder in "${folders[@]}"; do
     fi
     cd $current_dir
 done
-if [ $local_mode -eq 1 ]; then
-    LOCAL=1 make package
-else
-    make package
-fi
 
 APPLICATION_NAME=kfdfun
 CONFIGURATION=$1

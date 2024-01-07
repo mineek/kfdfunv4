@@ -9,6 +9,9 @@ APPLICATION_NAME = kfdmineek
 kfdmineek_FILES = $(wildcard *.m) $(wildcard ../shared/*.m)
 kfdmineek_FRAMEWORKS = UIKit CoreGraphics IOKit Foundation CoreTelephony
 kfdmineek_CFLAGS = -fobjc-arc -Wno-error -I../exploit -I../include -I../shared
+ifeq ($(MANUAL_EXPLOIT_METHOD),1)
+	kfdmineek_CFLAGS += -DUSE_MANUAL_EXPLOIT_METHOD
+endif
 kfdmineek_CODESIGN_FLAGS = -Sentitlements.plist
 kfdmineek_PRIVATE_FRAMEWORKS = SpringBoardServices BackBoardServices MobileContainerManager FrontBoardServices
 

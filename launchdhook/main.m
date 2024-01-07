@@ -71,12 +71,6 @@ void change_launchtype(const posix_spawnattr_t *attrp, const char *restrict path
     }
 }
 
-
-int hooked_posix_spawn(pid_t *pid, const char *path, const posix_spawn_file_actions_t *file_actions, const posix_spawnattr_t *attrp, char *const argv[], char *const envp[]) {
-    change_launchtype(attrp, path);
-    return orig_posix_spawn(pid, path, file_actions, attrp, argv, envp);
-}
-
 #define JB_ROOT_PREFIX ".jbroot-"
 #define JB_RAND_LENGTH  (sizeof(uint64_t)*sizeof(char)*2)
 
@@ -167,6 +161,18 @@ int hooked_posix_spawnp(pid_t *restrict pid, const char *restrict path, const po
     return orig_posix_spawnp(pid, path, file_actions, (posix_spawnattr_t *)attrp, argv, envp);
 }
 
+int hooked_posix_spawn(pid_t *pid, const char *path, const posix_spawn_file_actions_t *file_actions, const posix_spawnattr_t *attrp, char *const argv[], char *const envp[]) {
+    change_launchtype(attrp, path);
+    // thanks htrowii and nathan!!
+    const char *launchdPath = "/sbin/launchd";
+    const char *coolerLaunchd = jbroot(@"launchdmineek").UTF8String;
+    if (!strncmp(path, launchdPath, strlen(launchdPath))) {
+        posix_spawnattr_set_launch_type_np((posix_spawnattr_t *)attrp, 0);
+        path = coolerLaunchd;
+        return posix_spawn(pid, path, file_actions, attrp, argv, envp);
+    }
+    return orig_posix_spawn(pid, path, file_actions, attrp, argv, envp);
+}
 
 bool (*xpc_dictionary_get_bool_orig)(xpc_object_t dictionary, const char *key);
 bool hook_xpc_dictionary_get_bool(xpc_object_t dictionary, const char *key) {

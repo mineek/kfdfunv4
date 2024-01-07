@@ -66,11 +66,12 @@ int sign_tweaks(void);
 
 - (void)buttonPressed:(UIButton *)button {
 	// action sheet
-	/*UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"kfdfun" message:@"Choose an action" preferredStyle:UIAlertControllerStyleActionSheet];
+	#ifdef MANUAL_EXPLOIT_METHOD
+	UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"kfdfun" message:@"Choose an action" preferredStyle:UIAlertControllerStyleActionSheet];
 
 	[alert addAction:[UIAlertAction actionWithTitle:@"Exploit kernel" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
 		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-			kopen_wrapper();
+			kopen_wrapper(2);
 		});
 	}]];
 
@@ -107,7 +108,9 @@ int sign_tweaks(void);
 	[alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
 	}]];
 
-	[self presentViewController:alert animated:YES completion:nil];*/
+	[self presentViewController:alert animated:YES completion:nil];
+
+	#else
 
 	// just do everything
 	// ask for exploit method ( 0 = physpuppet, 1 = smith, 2 = landa )
@@ -162,6 +165,8 @@ int sign_tweaks(void);
 	[alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
 	}]];
 	[self presentViewController:alert animated:YES completion:nil];
+
+	#endif
 }
 
 @end

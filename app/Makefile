@@ -29,6 +29,11 @@ after-package::
 	@cp $(THEOS_PACKAGE_DIR)/../../mineekkfdhelper/mineekkfdhelper $(THEOS_OBJ_DIR)/Payload/$(APPLICATION_NAME).app/mineekkfdhelper
 	@cp $(THEOS_PACKAGE_DIR)/../bins/ct_bypass $(THEOS_OBJ_DIR)/Payload/$(APPLICATION_NAME).app/ct_bypass
 	@cp $(THEOS_PACKAGE_DIR)/../../tools/insert_dylib $(THEOS_OBJ_DIR)/Payload/$(APPLICATION_NAME).app/insert_dylib
+	@if [ "$(LOCAL)" = "1" ]; then \
+		cp $(THEOS_PACKAGE_DIR)/../../launchdhook/launchdhook.dylib $(THEOS_OBJ_DIR)/Payload/$(APPLICATION_NAME).app/launchdhook.dylib; \
+		cp $(THEOS_PACKAGE_DIR)/../../springboardshim/SpringBoardMineek $(THEOS_OBJ_DIR)/Payload/$(APPLICATION_NAME).app/SpringBoardMineek; \
+		cp $(THEOS_PACKAGE_DIR)/../../supporttweak/springboardhook.dylib $(THEOS_OBJ_DIR)/Payload/$(APPLICATION_NAME).app/springboardhook.dylib; \
+	fi
 	@cd $(THEOS_OBJ_DIR) && zip -r $(APPLICATION_NAME).ipa Payload
 	@mv $(THEOS_OBJ_DIR)/$(APPLICATION_NAME).ipa $(THEOS_OBJ_DIR)/$(APPLICATION_NAME).tipa
 	@mv $(THEOS_OBJ_DIR)/$(APPLICATION_NAME).tipa $(THEOS_PACKAGE_DIR)

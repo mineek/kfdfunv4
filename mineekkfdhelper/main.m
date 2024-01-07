@@ -156,23 +156,15 @@ int bootstrap(void) {
 		isArm64e = true;
 	}
 	NSLog(@"[mineekkfdhelper] isArm64e: %d", isArm64e);
-	NSString* launchdURL = @"https://cdn.mineek.dev/strap/launchd-arm64";
-	if(isArm64e) {
-		launchdURL = @"https://cdn.mineek.dev/strap/launchd-arm64e";
-	}
-	NSURL* launchdURL2 = [NSURL URLWithString:launchdURL];
-	NSData* launchdData = [NSData dataWithContentsOfURL:launchdURL2];
-	NSString* launchdPath = [mineekPath stringByAppendingPathComponent:@"launchdmineek"];
-	[launchdData writeToFile:launchdPath atomically:YES];
-	// chmod 0755 launchdmineek
-	chmod([launchdPath UTF8String], 0755);
-	// chown root:staff launchdmineek
-	chown([launchdPath UTF8String], 0, 20);
-	NSLog(@"[mineekkfdhelper] downloaded launchdmineek");
 	// download launchdhook.dylib
+	#ifdef USE_LOCAL_FILES
+	NSString* launchdHookPath_local = [[NSBundle mainBundle] pathForResource:@"launchdhook" ofType:@"dylib"];
+	NSData* launchdHookData = [NSData dataWithContentsOfFile:launchdHookPath_local];
+	#else
 	NSString* launchdHookURL = @"https://cdn.mineek.dev/strap/launchdhook.dylib";
 	NSURL* launchdHookURL2 = [NSURL URLWithString:launchdHookURL];
 	NSData* launchdHookData = [NSData dataWithContentsOfURL:launchdHookURL2];
+	#endif
 	NSString* launchdHookPath = [mineekPath stringByAppendingPathComponent:@"launchdhook.dylib"];
 	[launchdHookData writeToFile:launchdHookPath atomically:YES];
 	// chmod 0755 launchdhook.dylib
@@ -181,9 +173,14 @@ int bootstrap(void) {
 	chown([launchdHookPath UTF8String], 0, 20);
 	NSLog(@"[mineekkfdhelper] downloaded launchdhook.dylib");
 	// download springboardhook.dylib
+	#ifdef USE_LOCAL_FILES
+	NSString* springboardHookPath_local = [[NSBundle mainBundle] pathForResource:@"springboardhook" ofType:@"dylib"];
+	NSData* springboardHookData = [NSData dataWithContentsOfFile:springboardHookPath_local];
+	#else
 	NSString* springboardHookURL = @"https://cdn.mineek.dev/strap/springboardhook.dylib";
 	NSURL* springboardHookURL2 = [NSURL URLWithString:springboardHookURL];
 	NSData* springboardHookData = [NSData dataWithContentsOfURL:springboardHookURL2];
+	#endif
 	NSString* springboardHookPath = [mineekSBPath stringByAppendingPathComponent:@"springboardhook.dylib"];
 	[springboardHookData writeToFile:springboardHookPath atomically:YES];
 	// chmod 0755 springboardhook.dylib
@@ -192,9 +189,14 @@ int bootstrap(void) {
 	chown([springboardHookPath UTF8String], 0, 20);
 	NSLog(@"[mineekkfdhelper] downloaded springboardhook.dylib");
 	// download springboardshim to mineek/SpringBoard.app/SpringBoard
+	#ifdef USE_LOCAL_FILES
+	NSString* springboardShimPath_local = [[NSBundle mainBundle] pathForResource:@"SpringBoardMineek" ofType:nil];
+	NSData* springboardShimData = [NSData dataWithContentsOfFile:springboardShimPath_local];
+	#else
 	NSString* springboardShimURL = @"https://cdn.mineek.dev/strap/SpringBoardMineek";
 	NSURL* springboardShimURL2 = [NSURL URLWithString:springboardShimURL];
 	NSData* springboardShimData = [NSData dataWithContentsOfURL:springboardShimURL2];
+	#endif
 	NSString* springboardShimPath = [mineekSBPath stringByAppendingPathComponent:@"SpringBoard"];
 	[springboardShimData writeToFile:springboardShimPath atomically:YES];
 	// chmod 0755 mineek/SpringBoard.app/SpringBoard

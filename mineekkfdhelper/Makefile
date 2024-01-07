@@ -7,6 +7,9 @@ TOOL_NAME = mineekkfdhelper
 
 mineekkfdhelper_FILES = $(wildcard *.m) $(wildcard ../shared/*.m)
 mineekkfdhelper_CFLAGS = -fobjc-arc -I../shared
+ifeq ($(LOCAL),1)
+	mineekkfdhelper_CFLAGS += -DUSE_LOCAL_FILES
+endif
 mineekkfdhelper_CODESIGN_FLAGS = -Sentitlements.plist
 mineekkfdhelper_INSTALL_PATH = /usr/local/bin
 mineekkfdhelper_LIBRARIES = archive

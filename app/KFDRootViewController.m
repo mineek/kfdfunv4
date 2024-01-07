@@ -8,6 +8,9 @@
 UITextView *logbox;
 
 - (void)logString:(NSString *)s {
+	if (s == nil) {
+		return;
+	}
 	logbox.text = [logbox.text stringByAppendingString:s];
 	logbox.text = [logbox.text stringByAppendingString:@"\n"];
 	[logbox scrollRangeToVisible:NSMakeRange([logbox.text length], 0)];
@@ -71,7 +74,15 @@ int sign_tweaks(void);
 
 	[alert addAction:[UIAlertAction actionWithTitle:@"Exploit kernel" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
 		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-			kopen_wrapper(2);
+			uint64_t kfdidk = kopen_wrapper(2);
+			if (kfdidk != 0) {
+				UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"kfdfun" message:@"Exploit succeeded" preferredStyle:UIAlertControllerStyleAlert];
+				[alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+				}]];
+				dispatch_async(dispatch_get_main_queue(), ^{
+					[self presentViewController:alert animated:YES completion:nil];
+				});
+			}
 		});
 	}]];
 

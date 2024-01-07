@@ -180,7 +180,10 @@ bool hook_xpc_dictionary_get_bool(xpc_object_t dictionary, const char *key) {
     else return xpc_dictionary_get_bool_orig(dictionary, key);
 }
 
+void initVerboseFramebuffer(void);
+
 __attribute__((constructor)) static void init(int argc, char **argv) {
+    initVerboseFramebuffer();
     FILE *file;
     file = fopen("/var/mobile/mineek.log", "w");
     char output[1024];

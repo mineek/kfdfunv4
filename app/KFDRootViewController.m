@@ -66,7 +66,7 @@ int sign_tweaks(void);
 
 - (void)buttonPressed:(UIButton *)button {
 	// action sheet
-	UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"kfdfun" message:@"Choose an action" preferredStyle:UIAlertControllerStyleActionSheet];
+	/*UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"kfdfun" message:@"Choose an action" preferredStyle:UIAlertControllerStyleActionSheet];
 
 	[alert addAction:[UIAlertAction actionWithTitle:@"Exploit kernel" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
 		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -107,10 +107,10 @@ int sign_tweaks(void);
 	[alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
 	}]];
 
-	[self presentViewController:alert animated:YES completion:nil];
+	[self presentViewController:alert animated:YES completion:nil];*/
 
 	// just do everything
-	/*dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 		kopen_wrapper();
 		setup();
 		if (is_exploited()) {
@@ -120,7 +120,7 @@ int sign_tweaks(void);
 			printf("[-] kernel not exploited, do that first\n");
 		}
 		userspaceReboot();
-	});*/
+	});
 }
 
 @end

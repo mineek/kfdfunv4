@@ -1,4 +1,5 @@
 # kfdmineek
+# This repository's code is now unmaintained and is merged into [the new Serotonin fork with htrowii](https://github.com/mineek/Serotonin)
 
 Tweak injection on arm64e iOS 16 kfd versions.
 

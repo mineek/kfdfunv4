@@ -1,0 +1,63 @@
+name: iOS starter workflow
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: Build and Test default scheme using any available iPhone simulator
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Prepare Theos
+        uses: Randomblock1/theos-action@v1
+        with:
+          theos-src: 'https://github.com/roothide/theos'
+          theos-sdks: 'https://github.com/xybp888/iOS-SDKs'
+
+          orion: 'false'
+      - name: Build
+        run: |
+          cd ChOma
+          sudo make install
+          mkdir -p ~/build_bin
+          cp output/tests/* ~/build_bin
+          export PATH="$PATH:${HOME}/build_bin"
+          cd ../tools
+          make
+          cp insert_dylib ~/build_bin
+          cd ../app
+          ./build.sh
+      - name: Create github release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.run_id }}
+          release_name: Automated Release ${{ github.run_id }}
+          body: |
+            This release is automated.
+          draft: false
+          prerelease: false
+      - name: Upload release
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./app/packages/kfdmineek.tipa
+          asset_name: kfdmineek.tipa
+          asset_content_type: application/octet-stream
+
+
+
+            
